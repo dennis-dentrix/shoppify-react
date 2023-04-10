@@ -1,3 +1,5 @@
+import { CartCard } from './CartCard';
+
 export const CartList = () => {
     return (
       <>
@@ -9,6 +11,10 @@ export const CartList = () => {
         
         <section>
           {/* Cart Cards */}
+          <CartCard />
+          <CartCard />
+          <CartCard />
+          
         </section>
   
         <section className="max-w-4xl m-auto">
