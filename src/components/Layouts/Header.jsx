@@ -1,14 +1,25 @@
 import { useState, useEffect } from "react";
 import { Link } from "react-router-dom";
+import { useCart } from "../../Context";
 import Logo from "../../assets/logo.png";
 import { Search } from "../Sections/Search";
+import { DropdownLoggedIn, DropdownLoggedOut } from "../index";
 
 export const Header = () => {
+  // darkmode
   const [darkMode, setDarkMode] = useState(
     JSON.parse(localStorage.getItem("darkMode")) || false
   );
+  // search
   const [searchSection, setSearchSection] = useState(false);
+  // useracess toggle
+  const [dropdown, setDropDown] = useState(false);
 
+  // from accessToken to check user login
+  const token = JSON.parse(sessionStorage.getItem("token"));
+
+  // cartlist used in the cart length
+  const { cartList } = useCart();
   useEffect(() => {
     localStorage.setItem("darkMode", JSON.stringify(darkMode));
 
@@ -37,14 +48,25 @@ export const Header = () => {
               onClick={() => setSearchSection(!searchSection)}
               className="cursor-pointer text-xl text-gray-700 dark:text-white mr-5 bi bi-search"
             ></span>
+
             <Link to="/cart" className="text-gray-700 dark:text-white mr-5">
               <span className="text-2xl bi bi-cart-fill relative">
                 <span className="text-white text-sm absolute -top-1 left-2.5 bg-rose-500 px-1 rounded-full ">
-                  0
+                  {cartList.length}
                 </span>
               </span>
             </Link>
-            <span className="bi bi-person-circle cursor-pointer text-2xl text-gray-700 dark:text-white"></span>
+            <span
+              onClick={() => setDropDown(!dropdown)}
+              className="bi bi-person-circle cursor-pointer text-2xl text-gray-700 dark:text-white"
+            ></span>
+
+            {dropdown &&
+              (token ? (
+                <DropdownLoggedIn setDropDown={setDropDown} />
+              ) : (
+                <DropdownLoggedOut />
+              ))}
           </div>
         </div>
       </nav>

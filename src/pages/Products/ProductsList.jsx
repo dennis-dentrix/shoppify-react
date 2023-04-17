@@ -1,18 +1,17 @@
 import { useEffect, useState } from "react";
 import { useLocation } from "react-router-dom";
 import { useTitle } from "../../hooks/useTitle";
+import { useFilter } from "../../Context";
+import { useCart } from "../../Context";
 import { ProductCard } from "../../components";
 import { FilterBar } from "./components/FilterBar";
-import { useFilter } from "../../Context";
 
 export const ProductsList = () => {
+  const { productList, initialProductList } = useFilter();
   const [show, setShow] = useState(false);
-  // const [products, setProducts] = useState([]);
   const search = useLocation().search;
   const searchTerm = new URLSearchParams(search).get("q");
   useTitle("Explore eBooks Collection");
-  const { productList, initialProductList } = useFilter();
-  console.log();
 
   useEffect(() => {
     async function fetchProducts() {
@@ -22,11 +21,10 @@ export const ProductsList = () => {
         }`
       );
       const data = await response.json();
-      // setProducts(data);
       initialProductList(data);
     }
     fetchProducts();
-  }, []);
+  }, [searchTerm]);
 
   return (
     <main>

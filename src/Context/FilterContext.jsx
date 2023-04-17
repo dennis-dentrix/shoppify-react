@@ -1,9 +1,8 @@
-import React from "react";
 import { createContext, useContext, useReducer } from "react";
 import { filterReducer } from "../reducers";
 
-// step 1: initial state
-const FilterInitialState = {
+// create the initial state
+const filterInitialState = {
   productList: [],
   onlyInStock: false,
   bestSellerOnly: false,
@@ -11,28 +10,73 @@ const FilterInitialState = {
   ratings: null,
 };
 
-// step 2: context
-const FilterContext = createContext(FilterInitialState);
+// create context
+const FilterContext = createContext(filterInitialState);
 
-// step 3: provider
+// create the provider
 export const FilterProvider = ({ children }) => {
-  // step 4: dispatch
-  const [state, dispatch] = useReducer(filterReducer, FilterInitialState);
+  // create dispatch
+  const [state, dispatch] = useReducer(filterReducer, filterInitialState);
 
-  function initialProductList({ products }) {
+  function initialProductList(products) {
     dispatch({
       type: "PRODUCT_LIST",
       payload: {
-        products: state.products,
+        products: products,
       },
     });
   }
 
+  function bestSeller(products) {
+    return state.bestSellerOnly
+      ? products.filter((product) => product.best_seller === true)
+      : products;
+  }
+
+  function inStock(products) {
+    return state.onlyInStock
+      ? products.filter((product) => product.in_stock === true)
+      : products;
+  }
+
+  function sort(products) {
+    if (state.sortBy === "lowtohigh") {
+      return products.sort((a, b) => Number(a.price) - Number(b.price));
+    }
+    if (state.sortBy === "hightolow") {
+      return products.sort((a, b) => Number(b.price) - Number(a.price));
+    }
+
+    return products;
+  }
+
+  function rating(products) {
+    if (state.ratings === "4STARSABOVE") {
+      return products.filter((product) => product.rating >= 4);
+    }
+    if (state.ratings === "3STARSABOVE") {
+      return products.filter((product) => product.rating >= 3);
+    }
+    if (state.ratings === "2STARSABOVE") {
+      return products.filter((product) => product.rating >= 2);
+    }
+    if (state.ratings === "1STARSABOVE") {
+      return products.filter((product) => product.rating >= 1);
+    }
+    return products;
+  }
+
+  const filteredProductList = rating(
+    sort(inStock(bestSeller(state.productList)))
+  );
+
   const value = {
-    productList: FilterInitialState.productList,
+    state,
+    dispatch,
+    ratings: initialProductList.ratings,
+    productList: filteredProductList,
     initialProductList,
   };
-
   return (
     <FilterContext.Provider value={value}>{children}</FilterContext.Provider>
   );
