@@ -1,14 +1,17 @@
-import { useCart } from "../../../Context";
 import { useState, useEffect } from "react";
+import { useNavigate } from "react-router-dom";
+import { useCart } from "../../../Context";
 
 export const Checkout = ({ setCheckout }) => {
-  const { total } = useCart();
+  const { cartList, total, clearCart } = useCart();
   const [user, setUser] = useState({});
 
-  useEffect(() => {
-    const uId = JSON.parse(sessionStorage.getItem("uId"));
-    const token = JSON.parse(sessionStorage.getItem("token"));
+  const navigate = useNavigate();
 
+  const uId = JSON.parse(sessionStorage.getItem("uId"));
+  const token = JSON.parse(sessionStorage.getItem("token"));
+
+  useEffect(() => {
     async function getUser() {
       const response = await fetch(`http://localhost:8000/600/users/${uId} `, {
         method: "GET",
@@ -22,6 +25,33 @@ export const Checkout = ({ setCheckout }) => {
     }
     getUser();
   }, []);
+
+  async function handleOrder(event) {
+    event.preventDefault();
+    const order = {
+      cartList: cartList,
+      amount_paid: total,
+      quantity: cartList.length,
+      user: {
+        name: user.name,
+        email: user.email,
+        id: user.id,
+      },
+    };
+
+    const response = await fetch("http://localhost:8000/660/orders", {
+      method: "POST",
+      headers: {
+        "Content-Type": "application/json",
+        Authorization: `Bearer ${token}`,
+      },
+      body: JSON.stringify(order),
+    });
+    const data = await response.json();
+    clearCart();
+    navigate("/ ");
+  }
+
   return (
     <section>
       <div className="fixed top-0 left-0 w-full h-full bg-black bg-opacity-50"></div>
@@ -59,7 +89,7 @@ export const Checkout = ({ setCheckout }) => {
               <h3 className="mb-4 text-xl font-medium text-gray-900 dark:text-white">
                 <i className="bi bi-credit-card mr-2"></i>CARD PAYMENT
               </h3>
-              <form className="space-y-6">
+              <form onSubmit={handleOrder} className="space-y-6">
                 <div>
                   <label
                     htmlFor="name"
